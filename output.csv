@@ -1,0 +1,9 @@
+Location,Distance,Priority,PriorityScore,Score,AssignedAgent
+L4,8,High,3,-0.30000000000000027,Agent_1
+L1,10,High,3,-0.9000000000000004,Agent_2
+L6,12,Low,1,-2.8999999999999995,Agent_3
+L3,15,Medium,2,-3.1,Agent_1
+L7,18,High,3,-3.3,Agent_2
+L8,22,Medium,2,-5.199999999999999,Agent_3
+L2,25,Low,1,-6.8,Agent_1
+L5,30,Medium,2,-7.6,Agent_2

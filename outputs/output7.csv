@@ -1,0 +1,4 @@
+Agent,Location_ID,Priority,Distance_km,Sequence,Cumulative_km
+Agent_1,L1,High,10,1,10
+Agent_2,L3,Low,30,1,30
+Agent_3,L2,Medium,20,1,20
