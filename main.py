@@ -21,7 +21,7 @@ PRIORITY_MAP= {
     "Low": 1
 }
 
-# ---------------------1. Load & Validate Data-------------------------------
+# ---------------------Load and Validate the Data-------------------------------
 def load_data(filepath):
     df =pd.read_csv(filepath)
 
@@ -36,14 +36,14 @@ def load_data(filepath):
         raise ValueError(f"Unrecognised Priority values: {bad}. Expected High / Medium / Low.")
     return df
 
-# ---------------------2. Sorting Logic-------------------------------
+# ---------------------Sorting-------------------------------
 def sort_deliveries(df):
     return df.sort_values(
         by=["PriorityScore", "Distance", "Location_ID"],
         ascending=[False, True, True]
     ).reset_index(drop=True)
 
-# -----------------------Greedy Fallback (used when ILP gets failed)----------------
+# -----------------------Greedy (Fallback appraoch- used when ILP gets failed----------------
 def greedy_fallback(df, num_agents=NUM_AGENTS):
     agents= [f"Agent_{i+1}" for i in range(num_agents)]
     totals ={a: 0 for a in agents}
@@ -55,7 +55,7 @@ def greedy_fallback(df, num_agents=NUM_AGENTS):
         totals[lightest] += row["Distance"]
     return assignment
 
-# -----------------------3.ILP Assignment-------------
+# -----------------------ILP Assignment to agents-------------
 def solve_ilp(df, num_agents=NUM_AGENTS):
     n =len(df)
     distances = df["Distance"].tolist()
@@ -85,7 +85,7 @@ def solve_ilp(df, num_agents=NUM_AGENTS):
         prob += total_distance <= max_dist
         prob += total_distance >= min_dist
         prob += lpSum(x[i][j] for i in range(n)) <= max_per
-    high_indices = [i for i in range(n) if df.iloc[i]["Priority"] == "High"]
+    high_indices= [i for i in range(n) if df.iloc[i]["Priority"] == "High"]
     n_high = len(high_indices)
 
     if n_high > 0:
@@ -106,7 +106,7 @@ def solve_ilp(df, num_agents=NUM_AGENTS):
                 assignment[agents[j]].append(i)
                 break
 
-    assigned = {idx for indices in assignment.values() for idx in indices}
+    assigned= {idx for indices in assignment.values() for idx in indices}
     unassigned = [i for i in range(n) if i not in assigned]
 
     if unassigned:
@@ -120,27 +120,27 @@ def solve_ilp(df, num_agents=NUM_AGENTS):
             assignment[lightest].append(idx)
             agent_totals[lightest] += df.iloc[idx]["Distance"]
     return assignment
-# ---------------4. Route Sequencing (TSP Nearest Neighbour)--------------
+# ---------------Route Sequencing (TSP Nearest Neighbour)--------------
 def tsp_nn(distances):
 
-    if len(distances) == 0:
+    if len(distances)== 0:
         return []
     n = len(distances)
     visited = [False] * n
     start = distances.index(min(distances))
-    route = [start]
-    visited[start] = True
+    route= [start]
+    visited[start] =True
 
     for _ in range(n - 1):
         last = route[-1]
-        next_node = min(
+        next_node= min(
             (j for j in range(n) if not visited[j]),
             key=lambda j: abs(distances[last] - distances[j])
         )
         route.append(next_node)
         visited[next_node] = True
     return route
-# ---------------------5. Build Output-------------------------------
+# ---------------------output-------------------------------
 def build_output(df, assignment):
     rows = []
     for agent, indices in assignment.items():
@@ -171,7 +171,7 @@ def build_output(df, assignment):
             })
     return pd.DataFrame(rows)
 
-#----------------------- 6. Metrics---------------------------------
+#----------------------- metrics---------------------------------
 def compute_imbalance(df):
     totals = df.groupby("Agent")["Distance_km"].sum()
     return (totals.max() - totals.min()) / totals.mean() * 100
@@ -188,7 +188,7 @@ def compute_priority_compliance(df):
         high_top += (high["Sequence"] <= top_k).sum()
     return (high_top / total_high * 100) if total_high else 100.0
 
-# --------------------- Outlier Detection-------------------------------
+# ---------------------outlier Detection-------------------------------
 def flag_outliers(df):
     mean_dist = df["Distance"].mean()
     std_dist  = df["Distance"].std()
@@ -199,7 +199,7 @@ def flag_outliers(df):
     outliers  = df[df["Distance"] > threshold]["Location_ID"].tolist()
     return outliers, threshold
 
-# ---------------------7. Reporting-------------------------------
+# ---------------------Reporting-------------------------------
 def print_report(file, df, imbalance, compliance, source_df):
 
     edge_case = len(df)<= NUM_AGENTS
@@ -215,7 +215,6 @@ def print_report(file, df, imbalance, compliance, source_df):
         print(f"  Locations : {group['Location_ID'].tolist()}")
         print(f"  Total     : {total} km")
         print(f"  Deliveries: {len(group)}")
-
     values =list(totals.values())
 
     print("\nQUALITY METRICS")
@@ -247,7 +246,7 @@ def print_report(file, df, imbalance, compliance, source_df):
         print(" Poor priority handling -> SLA risk")
     print("=" * 60)
 
-# ---------------------8. Batch Execution-------------------------------
+# ---------------------Batch run-------------------------------
 def batch_run():
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
     files = sorted(f for f in os.listdir(INPUT_FOLDER) if f.endswith(".csv"))
