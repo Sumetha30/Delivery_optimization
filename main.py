@@ -203,7 +203,6 @@ def flag_outliers(df):
 def print_report(file, df, imbalance, compliance, source_df):
 
     edge_case = len(df)<= NUM_AGENTS
-    print(f"\n{'='*60}")
     print(f"DELIVERY REPORT -> {file}")
     print(f"{'='*60}")
 
